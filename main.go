@@ -108,7 +108,7 @@ func parseUrl(u string) string {
 		panic("Host missing.")
 	}
 	if res.Port() == "80" {
-		log.Println("Chainsaw suggest you to remove default port 80, because this feature may affect the result.")
+		log.Println("We suggest you to remove default port 80, because this feature may affect the result.")
 	}
 	return res.Scheme+"://"+res.Host
 }

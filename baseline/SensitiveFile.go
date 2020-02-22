@@ -13,8 +13,12 @@ func detectFiles(u *string) {
 	for _,v := range list {
 		entry := *u+ "/" +v
 		req, _ := http.NewRequest("GET", entry, nil)
-		req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36")
-		resp, e := (&http.Client{}).Do(req)
+		req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.116 Safari/537.36")
+		resp, e := (&http.Client{
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
+		}).Do(req)
 		if e != nil {
 			panic(e)
 		}
@@ -35,7 +39,7 @@ func detectFiles(u *string) {
 }
 
 func detectGeneralFiles(u *string) {
-	list := [...]string{"README.md", "robots.txt"}
+	list := [...]string{"README.md", ".htaccess", "robots.txt", }
 	for _,v := range list {
 		entry := *u+ "/" +v
 		req, _ := http.NewRequest("GET", entry, nil)
@@ -46,7 +50,7 @@ func detectGeneralFiles(u *string) {
 		}
 		defer resp.Body.Close()
 		ct := resp.Header.Get("Content-Type")
-		if resp.StatusCode == 200 && strings.Contains(ct, "text/plain"){
+		if resp.StatusCode == 200 && !strings.Contains(ct, "text/html"){
 			body, e := ioutil.ReadAll(resp.Body)
 			if e != nil {
 				panic(e)
