@@ -1,10 +1,10 @@
 package baseline
 
 import (
+	"chainsaw/tools"
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"strings"
 )
 
@@ -12,10 +12,7 @@ func springActuator(u *string) bool {
 	list := [...]string{"/autoconfig", "/beans", "/env", "/configprops", "/dump", "/health", "/info", "/mappings", "/metrics", "/shutdown", "/trace"}
 	for _, l := range list {
 		entry := *u + l
-		resp, e := http.Get(entry)
-		if e != nil {
-			panic(e)
-		}
+		resp := tools.DoRequest(entry, tools.ReqParam{})
 		defer resp.Body.Close()
 		if resp.StatusCode == 200 {
 			log.Println("[*] Detected Spring Actuator information leak.", entry)
@@ -26,10 +23,7 @@ func springActuator(u *string) bool {
 
 func druid(u *string) bool {
 	entry := *u+"/druid/index.html"
-	resp, e := http.Get(entry)
-	if e != nil {
-		panic(e)
-	}
+	resp := tools.DoRequest(entry, tools.ReqParam{})
 	defer resp.Body.Close()
 	if resp.StatusCode == 200 {
 		body, e := ioutil.ReadAll(resp.Body)
@@ -45,11 +39,7 @@ func druid(u *string) bool {
 }
 
 func laravelDebug(u *string) bool {
-	resp, e := http.Post(*u, "", nil)
-	if e != nil {
-		fmt.Println(e)
-		return false
-	}
+	resp := tools.DoRequest(*u, tools.ReqParam{Method: "POST"})
 	defer resp.Body.Close()
 	if resp.StatusCode == 405 {
 		body, e := ioutil.ReadAll(resp.Body)

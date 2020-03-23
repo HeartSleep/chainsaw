@@ -1,10 +1,10 @@
 package baseline
 
 import (
+	"chainsaw/tools"
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"strings"
 )
 
@@ -12,17 +12,7 @@ func detectFiles(u *string) {
 	list := [...]string{"admin.php", "admin.asp", "admin.jsp", "admin.aspx", "admin/"}
 	for _,v := range list {
 		entry := *u+ "/" +v
-		req, _ := http.NewRequest("GET", entry, nil)
-		req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.116 Safari/537.36")
-		resp, e := (&http.Client{
-			CheckRedirect: func(req *http.Request, via []*http.Request) error {
-				return http.ErrUseLastResponse
-			},
-		}).Do(req)
-		if e != nil {
-			panic(e)
-		}
-		defer resp.Body.Close()
+		resp := tools.DoRequest(entry, tools.ReqParam{})
 		if resp.StatusCode == 200 && strings.Contains(resp.Header.Get("Content-Type"), "text/html") {
 			body, e := ioutil.ReadAll(resp.Body)
 			if e != nil {
@@ -42,12 +32,7 @@ func detectGeneralFiles(u *string) {
 	list := [...]string{"README.md", ".htaccess", "robots.txt", }
 	for _,v := range list {
 		entry := *u+ "/" +v
-		req, _ := http.NewRequest("GET", entry, nil)
-		req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36")
-		resp, e := (&http.Client{}).Do(req)
-		if e != nil {
-			panic(e)
-		}
+		resp := tools.DoRequest(entry, tools.ReqParam{})
 		defer resp.Body.Close()
 		ct := resp.Header.Get("Content-Type")
 		if resp.StatusCode == 200 && !strings.Contains(ct, "text/html"){
@@ -67,12 +52,7 @@ func detectGeneralFiles(u *string) {
 
 func crossdomain(u *string) {
 	entry := *u + "/crossdomain.xml"
-	req, _ := http.NewRequest("GET", entry, nil)
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36")
-	resp, e := (&http.Client{}).Do(req)
-	if e != nil {
-		panic(e)
-	}
+	resp := tools.DoRequest(entry, tools.ReqParam{})
 	defer resp.Body.Close()
 	if resp.StatusCode == 200 {
 		body, e := ioutil.ReadAll(resp.Body)
@@ -88,12 +68,7 @@ func crossdomain(u *string) {
 
 func robots(u *string) {
 	entry := *u+ "/robots.txt"
-	req, _ := http.NewRequest("GET", entry, nil)
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36")
-	resp, e := (&http.Client{}).Do(req)
-	if e != nil {
-		panic(e)
-	}
+	resp := tools.DoRequest(entry, tools.ReqParam{})
 	defer resp.Body.Close()
 	if resp.StatusCode == 200 {
 		body, e := ioutil.ReadAll(resp.Body)
@@ -113,10 +88,7 @@ func robots(u *string) {
 
 func directoryListing(u *string) bool {
 	entry := *u
-	resp, e := http.Get(entry)
-	if e != nil {
-		panic(e)
-	}
+	resp := tools.DoRequest(entry, tools.ReqParam{})
 	defer resp.Body.Close()
 	if resp.StatusCode == 200 {
 		body, e := ioutil.ReadAll(resp.Body)
