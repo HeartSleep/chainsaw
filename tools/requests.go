@@ -9,6 +9,8 @@ type ReqParam struct {
 	Timeout int
 	ContentType string
 	Method string
+	Redirect bool
+	Headers []string
 }
 
 func (obj *ReqParam) LoadDefault() {
@@ -21,12 +23,18 @@ func (obj *ReqParam) LoadDefault() {
 	if obj.Timeout == 0 {
 		obj.Timeout = 5
 	}
+	if obj.Method == "POST" && obj.ContentType == "" {
+		obj.ContentType = "application/x-www-form-urlencoded"
+	}
 }
 
 func  DoRequest(url string, param ReqParam) *http.Response {
 	param.LoadDefault()
 	req, _ := http.NewRequest(param.Method, url, nil)
 	req.Header.Set("User-Agent", param.UA)
+	if param.Method == "POST" {
+		req.Header.Set("Content-Type", param.ContentType)
+	}
 	resp, err := (&http.Client{
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
@@ -36,12 +44,4 @@ func  DoRequest(url string, param ReqParam) *http.Response {
 		panic(err)
 	}
 	return resp
-	//if resp.StatusCode == 200 {
-	//	r, err := ioutil.ReadAll(resp.Body)
-	//	if err != nil {
-	//		panic(err)
-	//	}
-	//	fmt.Println(string(r))
-	//}
-	//return resp
 }

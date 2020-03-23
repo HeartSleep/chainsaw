@@ -7,6 +7,7 @@ package main
 import (
 	"bufio"
 	"chainsaw/baseline"
+	"chainsaw/tools"
 	"flag"
 	"fmt"
 	"io"
@@ -18,7 +19,7 @@ import (
 	"strings"
 )
 
-var arg_file = flag.String("f", "", "Specify a file path.")
+var arg_file = flag.String("f", "", "path to file")
 
 type Proxy struct {
 
@@ -86,12 +87,7 @@ func core(u string) {
 }
 
 func isAlive(u string) bool {
-	req, _ := http.NewRequest("HEAD", u, nil)
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36")
-	resp, e := (&http.Client{}).Do(req)
-	if e != nil {
-		return false
-	}
+	resp := tools.DoRequest(u, tools.ReqParam{})
 	defer resp.Body.Close()
 	return true
 }
@@ -107,8 +103,8 @@ func parseUrl(u string) string {
 	if res.Host == "" {
 		panic("Host missing.")
 	}
-	if res.Port() == "80" {
-		log.Println("We suggest you to remove default port 80, because this feature may affect the result.")
+	if res.Port() == "80" || res.Port() == "443" {
+		log.Println("DO NOT add http's default port 80, it may affect the accuracy.")
 	}
 	return res.Scheme+"://"+res.Host
 }
