@@ -19,10 +19,9 @@ import (
 	"strings"
 )
 
-var arg_file = flag.String("f", "", "path to file")
+var argFile = flag.String("f", "", "path to file")
 
 type Proxy struct {
-
 }
 
 func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
@@ -57,8 +56,8 @@ func main() {
 		fmt.Println("[*] Use -help to get help.")
 		os.Exit(0)
 	}
-	if *arg_file != "" {
-		file, err := os.Open(*arg_file)
+	if *argFile != "" {
+		file, err := os.Open(*argFile)
 		if err != nil {
 			panic(err)
 		}
@@ -75,36 +74,32 @@ func main() {
 	_ = http.ListenAndServe("0.0.0.0:1234", nil)
 }
 
-func core(u string) {
-	fmt.Println("[+] Working on "+ u +"...")
-	entry := parseUrl(u)
-	if isAlive(entry) {
-		baseline.Start(entry)
+func core(urlText string) {
+	fmt.Println("[+] Working on "+ urlText +"...")
+	Url, _ := url.Parse(urlText)
+	checkUrl(Url)
+	if isAlive(Url) {
+		baseline.Start(Url)
 	} else {
-		log.Println("[*] " + u + " not alive!")
+		log.Println("[*] " + Url.String() + " not alive!")
 	}
 	fmt.Println("[+] Done.")
 }
 
-func isAlive(u string) bool {
-	resp := tools.DoRequest(u, tools.ReqParam{})
+func isAlive(Url *url.URL) bool {
+	resp := tools.DoRequest(Url, tools.ReqParam{Timeout: 10})
 	defer resp.Body.Close()
 	return true
 }
 
-func parseUrl(u string) string {
-	res, err := url.Parse(u)
-	if err != nil {
-		panic(err)
-	}
-	if res.Scheme!="http" && res.Scheme!="https" {
+func checkUrl(url *url.URL) {
+	if url.Scheme!="http" && url.Scheme!="https" {
 		panic("Protocol missing.")
 	}
-	if res.Host == "" {
+	if url.Host == "" {
 		panic("Host missing.")
 	}
-	if res.Port() == "80" || res.Port() == "443" {
-		log.Println("DO NOT add http's default port 80, it may affect the accuracy.")
+	if url.Port() == "80" || url.Port() == "443" {
+		log.Println("DO NOT add http's default port, it may affect the accuracy!")
 	}
-	return res.Scheme+"://"+res.Host
 }

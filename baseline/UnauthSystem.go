@@ -5,25 +5,26 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/url"
 	"strings"
 )
 
-func springActuator(u *string) bool {
-	list := [...]string{"/autoconfig", "/beans", "/env", "/configprops", "/dump", "/health", "/info", "/mappings", "/metrics", "/shutdown", "/trace"}
+func springActuator(Url *url.URL) bool {
+	list := [...]string{"/autoconfig", "/env", "/dump", "/health", "/info", "/mappings", "/trace"}
 	for _, l := range list {
-		entry := *u + l
-		resp := tools.DoRequest(entry, tools.ReqParam{})
+		Url.Path = l
+		resp := tools.DoRequest(Url, tools.ReqParam{})
 		defer resp.Body.Close()
 		if resp.StatusCode == 200 {
-			log.Println("[*] Detected Spring Actuator information leak.", entry)
+			log.Println("[*] Detected Spring Actuator information leak.", Url.String())
 		}
 	}
 	return false
 }
 
-func druid(u *string) bool {
-	entry := *u+"/druid/index.html"
-	resp := tools.DoRequest(entry, tools.ReqParam{})
+func druid(Url *url.URL) bool {
+	Url.Path = "/druid/index.html"
+	resp := tools.DoRequest(Url, tools.ReqParam{})
 	defer resp.Body.Close()
 	if resp.StatusCode == 200 {
 		body, e := ioutil.ReadAll(resp.Body)
@@ -31,15 +32,15 @@ func druid(u *string) bool {
 			panic(e)
 		}
 		if strings.Contains(string(body), "Druid Stat Index")  {
-			log.Println("[*] Detected Druid unauthorized.", entry)
+			log.Println("[*] Detected Druid unauthorized.", Url.String())
 			return true
 		}
 	}
 	return false
 }
 
-func laravelDebug(u *string) bool {
-	resp := tools.DoRequest(*u, tools.ReqParam{Method: "POST"})
+func laravelDebug(Url *url.URL) bool {
+	resp := tools.DoRequest(Url, tools.ReqParam{Method: "POST"})
 	defer resp.Body.Close()
 	if resp.StatusCode == 405 {
 		body, e := ioutil.ReadAll(resp.Body)
@@ -48,7 +49,7 @@ func laravelDebug(u *string) bool {
 			return false
 		}
 		if strings.Contains(string(body), "MethodNotAllowedHttpException") {
-			log.Println("[*] Detected Laravel debug mode.", *u)
+			log.Println("[*] Detected Laravel debug mode.", Url.String())
 			return true
 		}
 	}
