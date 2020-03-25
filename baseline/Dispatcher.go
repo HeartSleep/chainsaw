@@ -11,7 +11,7 @@ func Start(Url *url.URL) {
 	detectGeneralFiles(Url)
 	detectFiles(Url)
 	crossdomain(Url)
-	directoryListing(Url)
+	//directoryListing(Url)
 	druid(Url)
 	laravelDebug(Url)
 	CorsCheck(Url)
