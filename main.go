@@ -17,6 +17,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 )
 
 var argFile = flag.String("f", "", "path to file")
@@ -87,7 +88,7 @@ func core(urlText string) {
 }
 
 func isAlive(Url *url.URL) bool {
-	resp := tools.DoRequest(Url, tools.ReqParam{Timeout: 10})
+	resp := tools.DoRequest(Url, tools.ReqParam{Timeout: 10 * time.Second})
 	defer resp.Body.Close()
 	return true
 }

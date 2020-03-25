@@ -4,7 +4,6 @@ import (
 	"chainsaw/tools"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/url"
 	"strings"
 )
@@ -20,9 +19,7 @@ func detectFiles(Url *url.URL) {
 				panic(e)
 			}
 			str := string(body)
-			if len(str) > 500 {
-				str = str[:500]
-			}
+			if len(str) > 500 {str = str[:500]}
 			fmt.Println("[*] Detected "+ Url.String())
 			fmt.Println(str)
 		}
@@ -68,18 +65,19 @@ func crossdomain(Url *url.URL) {
 	}
 }
 
-func directoryListing(Url *url.URL) bool {
-	resp := tools.DoRequest(Url, tools.ReqParam{})
-	defer resp.Body.Close()
-	if resp.StatusCode == 200 {
-		body, e := ioutil.ReadAll(resp.Body)
-		if e != nil {
-			panic(e)
-		}
-		if strings.Contains(string(body), "Directory listing for")  {
-			log.Println("Detected Directory List.", Url.String())
-			return true
-		}
-	}
-	return false
-}
+// TODO Should detect with data flow
+//func directoryListing(Url *url.URL) bool {
+//	resp := tools.DoRequest(Url, tools.ReqParam{})
+//	defer resp.Body.Close()
+//	if resp.StatusCode == 200 {
+//		body, e := ioutil.ReadAll(resp.Body)
+//		if e != nil {
+//			panic(e)
+//		}
+//		if strings.Contains(string(body), "Directory listing for")  {
+//			log.Println("Detected Directory List.", Url.String())
+//			return true
+//		}
+//	}
+//	return false
+//}
