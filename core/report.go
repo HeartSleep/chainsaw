@@ -1,9 +1,13 @@
 package core
 
-import "net/url"
+import (
+	"chainsaw/network"
+	"net/url"
+)
 
 type VulMsg struct {
 	Url url.URL
+	Param network.ReqParam
 	Module string
 	Detail map[string]string
 }
@@ -19,4 +23,3 @@ func Report(msg VulMsg) bool{
 func WriteToFile() {
 
 }
-

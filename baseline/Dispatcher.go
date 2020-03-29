@@ -3,17 +3,22 @@ package baseline
 import "net/url"
 
 /**
-	This module is a dispatcher.
+	Dispatcher
 	12:11 AM, December 9, 2019 in HeFei.
  */
 
+func renewUrl(Url *url.URL) *url.URL {
+	newUrl := &url.URL{}
+	*newUrl = *Url
+	return newUrl
+}
+
 func Start(Url *url.URL) {
-	detectGeneralFiles(Url)
-	detectFiles(Url)
-	crossdomain(Url)
-	//directoryListing(Url)
-	druid(Url)
-	laravelDebug(Url)
-	CorsCheck(Url)
-	springActuator(Url)
+	detectGeneralFiles(renewUrl(Url))
+	detectFiles(renewUrl(Url))
+	crossdomain(renewUrl(Url))
+	druid(renewUrl(Url))
+	laravelDebug(renewUrl(Url))
+	CorsCheck(renewUrl(Url))
+	springActuator(renewUrl(Url))
 }

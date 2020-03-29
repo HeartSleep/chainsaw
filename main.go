@@ -7,7 +7,7 @@ package main
 import (
 	"bufio"
 	"chainsaw/baseline"
-	"chainsaw/tools"
+	"chainsaw/core"
 	"flag"
 	"fmt"
 	"io"
@@ -17,7 +17,6 @@ import (
 	"net/url"
 	"os"
 	"strings"
-	"time"
 )
 
 var argFile = flag.String("f", "", "path to file")
@@ -65,42 +64,23 @@ func main() {
 		defer file.Close()
 		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
-			core(scanner.Text())
+			start(scanner.Text())
 		}
 		os.Exit(0)
 	}
 	u := os.Args[1]
-	core(u)
+	start(u)
 	http.Handle("/", &Proxy{})
 	_ = http.ListenAndServe("0.0.0.0:1234", nil)
 }
 
-func core(urlText string) {
+func start(urlText string) {
 	fmt.Println("[+] Working on "+ urlText +"...")
 	Url, _ := url.Parse(urlText)
-	checkUrl(Url)
-	if isAlive(Url) {
+	if core.CheckUrl(Url) {
 		baseline.Start(Url)
 	} else {
 		log.Println("[*] " + Url.String() + " not alive!")
 	}
 	fmt.Println("[+] Done.")
-}
-
-func isAlive(Url *url.URL) bool {
-	resp := tools.DoRequest(Url, tools.ReqParam{Timeout: 10 * time.Second})
-	defer resp.Body.Close()
-	return true
-}
-
-func checkUrl(url *url.URL) {
-	if url.Scheme!="http" && url.Scheme!="https" {
-		panic("Protocol missing.")
-	}
-	if url.Host == "" {
-		panic("Host missing.")
-	}
-	if url.Port() == "80" || url.Port() == "443" {
-		log.Println("DO NOT add http's default port, it may affect the accuracy!")
-	}
 }
